@@ -1,6 +1,6 @@
 # Sistema de Controle de Estoque e Vendas - API
 
-Uma API RESTful desenvolvida em Laravel para gerenciamento completo de estoque e vendas, com autenticação via Laravel Sanctum e arquitetura baseada em padrões de design como Repository, Service e DTO.
+Uma API RESTful desenvolvida em Laravel 12.33.0 (PHP 8.3), para gerenciamento completo de estoque e vendas, com autenticação via Laravel Sanctum e arquitetura baseada em padrões de design como Repository, Service e DTO, executando em ambiente Docker (Laravel Sail).
 
 ## 📋 Índice
 
