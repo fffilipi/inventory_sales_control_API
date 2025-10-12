@@ -9,7 +9,6 @@ Uma API RESTful desenvolvida em Laravel para gerenciamento completo de estoque e
 - [Configuração](#-configuração)
 - [Executando o Projeto](#-executando-o-projeto)
 - [Testes](#-testes)
-- [API Endpoints](#-api-endpoints)
 - [Usuários Padrão](#-usuários-padrão)
 - [Estrutura do Projeto](#-estrutura-do-projeto)
 - [Documentação Técnica](#-documentação-técnica)
