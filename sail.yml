@@ -1,0 +1,2 @@
+services:
+    laravel.test: inventory_api
