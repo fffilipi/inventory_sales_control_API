@@ -133,6 +133,22 @@ $app->router->group(['prefix' => 'api', 'middleware' => 'auth.api'], function ($
 
 /**
  * ========================================
+ * ROTAS DE DOCUMENTAÇÃO SWAGGER (PÚBLICAS)
+ * ========================================
+ * 
+ * Rotas para acesso à documentação interativa da API.
+ * Não requerem autenticação para visualização.
+ */
+$app->router->get('/api/documentation', function () {
+    return redirect('/api/documentation/index.html');
+});
+
+$app->router->get('/api/documentation/index.html', function () {
+    return view('l5-swagger::index');
+});
+
+/**
+ * ========================================
  * INJEÇÃO DE DEPENDÊNCIAS
  * ========================================
  * 

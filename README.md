@@ -160,6 +160,18 @@ curl -H "Authorization: Bearer SEU_TOKEN_AQUI" http://localhost:8080/api/product
 
 **Nota**: O comando `php artisan serve` é necessário para que a API seja acessível via HTTP. Sem ele, apenas os containers estarão rodando, mas não haverá servidor web ativo.
 
+### 6. Acessar Documentação Swagger
+```bash
+# Acesse a documentação interativa em:
+# http://localhost:8080/api/documentation
+
+# A documentação Swagger permite:
+# - Testar todos os endpoints interativamente
+# - Ver exemplos de request/response
+# - Autenticar e testar rotas protegidas
+# - Explorar schemas e validações
+```
+
 ## 🧪 Testes
 
 ### Executar Todos os Testes
@@ -315,12 +327,16 @@ inventory_sales_control_API/
     └── app.php                  # Configuração da aplicação
 ```
 
-## 📚 Documentação Técnica
+## 📚 Documentação
 
-Para documentação técnica completa sobre arquitetura, padrões de design, modelagem de dados e regras de negócio, consulte:
+### **Documentação Interativa (Swagger)**
+- 🌐 **Interface Swagger**: `http://localhost:8080/api/documentation`
+- 📖 **Guia do Swagger**: [SWAGGER.md](SWAGGER.md)
+- 🚀 **Exemplos Práticos**: [SWAGGER_EXAMPLES.md](SWAGGER_EXAMPLES.md)
 
-- **[DOCUMENTATION.md](DOCUMENTATION.md)** - Documentação técnica completa
-- **[TESTING.md](TESTING.md)** - Documentação dos testes
+### **Documentação Técnica**
+- 📋 **[DOCUMENTATION.md](DOCUMENTATION.md)** - Documentação técnica completa
+- 🧪 **[TESTING.md](TESTING.md)** - Documentação dos testes
 
 ## 🛠️ Comandos Úteis
 
@@ -342,6 +358,18 @@ Para documentação técnica completa sobre arquitetura, padrões de design, mod
 ./vendor/bin/sail artisan cache:clear
 ./vendor/bin/sail artisan config:clear
 ./vendor/bin/sail artisan route:clear
+```
+
+### Documentação Swagger
+```bash
+# Regenerar documentação Swagger
+./vendor/bin/sail artisan l5-swagger:generate
+
+# Verificar configuração do Swagger
+./vendor/bin/sail artisan config:show l5-swagger
+
+# Limpar cache da documentação
+./vendor/bin/sail artisan cache:clear
 ```
 
 ### Manutenção

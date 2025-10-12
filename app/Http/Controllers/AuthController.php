@@ -10,6 +10,7 @@ use App\Http\Requests\RegisterRequest;
 use App\DTOs\Auth\LoginDTO;
 use App\DTOs\Auth\RegisterDTO;
 use App\Services\AuthService;
+use OpenApi\Annotations as OA;
 
 /**
  * Controller responsável por gerenciar a autenticação de usuários
@@ -46,7 +47,38 @@ class AuthController extends Controller
      * Este método autentica o usuário com email e senha, e retorna
      * um token JWT válido por 24 horas para acesso às rotas protegidas.
      * 
-     * @param Request $request Requisição contendo email e password
+     * @OA\Post(
+     *     path="/api/auth/login",
+     *     tags={"Autenticação"},
+     *     summary="Realizar login",
+     *     description="Autentica o usuário e retorna um token de acesso JWT",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(ref="#/components/schemas/LoginRequest")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Login realizado com sucesso",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Login realizado com sucesso"),
+     *             @OA\Property(property="data", ref="#/components/schemas/TokenResponse"),
+     *             @OA\Property(property="timestamp", type="string", format="date-time")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Dados de login inválidos",
+     *         @OA\JsonContent(ref="#/components/schemas/ApiError")
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Erro interno do servidor",
+     *         @OA\JsonContent(ref="#/components/schemas/ApiError")
+     *     )
+     * )
+     * 
+     * @param LoginRequest $request Requisição contendo email e password
      * @return \Illuminate\Http\JsonResponse
      * 
      * @throws ValidationException Quando os dados de login são inválidos

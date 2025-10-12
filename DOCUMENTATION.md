@@ -11,6 +11,7 @@
 - [Eventos e Listeners](#-eventos-e-listeners)
 - [Cache e Performance](#-cache-e-performance)
 - [Laravel Sail](#-laravel-sail)
+- [Documentação Swagger](#-documentação-swagger)
 - [Validações](#-validações)
 - [Respostas da API](#-respostas-da-api)
 - [Tratamento de Erros](#-tratamento-de-erros)
@@ -728,6 +729,89 @@ chmod -R 775 storage bootstrap/cache
 ./vendor/bin/sail artisan view:cache
 ```
 
+## 📖 Documentação Swagger
+
+### Visão Geral
+
+A API possui documentação interativa completa via Swagger/OpenAPI, permitindo que desenvolvedores testem e entendam todos os endpoints disponíveis de forma visual e interativa.
+
+### Acesso à Documentação
+
+#### URL da Documentação
+```
+http://localhost:8080/api/documentation
+```
+
+#### Funcionalidades
+- ✅ **Interface interativa** para teste de endpoints
+- ✅ **Autenticação integrada** com Bearer Token
+- ✅ **Exemplos práticos** com dados reais
+- ✅ **Validação automática** de dados
+- ✅ **Schemas completos** de todos os modelos
+- ✅ **Códigos de status** HTTP explicados
+
+### Estrutura da Documentação
+
+#### Tags Organizadas
+- 🔐 **Autenticação** - Login, registro, logout
+- 📦 **Produtos** - CRUD de produtos
+- 📊 **Estoque** - Controle de estoque
+- 💰 **Vendas** - Processamento de vendas
+
+#### Schemas Definidos
+- **Product** - Estrutura de produtos
+- **InventoryItem** - Item de estoque consolidado
+- **Sale** - Venda com itens
+- **SaleItem** - Item individual de venda
+- **User** - Dados do usuário
+- **ApiResponse** - Resposta padrão de sucesso
+- **ApiError** - Resposta padrão de erro
+
+#### Requests/Responses
+- **LoginRequest** - Dados de login
+- **RegisterRequest** - Dados de registro
+- **ProductRequest** - Dados de produto
+- **InventoryRequest** - Dados de estoque
+- **SaleRequest** - Dados de venda
+- **TokenResponse** - Resposta com token
+
+### Configuração Técnica
+
+#### Pacote Utilizado
+```bash
+# L5-Swagger para Laravel
+composer require darkaonline/l5-swagger
+```
+
+### Comandos de Manutenção
+
+#### Regenerar Documentação
+```bash
+# Regenerar após mudanças no código
+./vendor/bin/sail artisan l5-swagger:generate
+```
+
+#### Verificar Configuração
+```bash
+# Verificar configurações do Swagger
+./vendor/bin/sail artisan config:show l5-swagger
+```
+
+#### Limpar Cache
+```bash
+# Limpar cache da documentação
+./vendor/bin/sail artisan cache:clear
+```
+
+### Exemplos de Uso
+
+#### Fluxo Completo de Teste
+1. **Acessar** `http://localhost:8080/api/documentation`
+2. **Fazer login** via endpoint de autenticação
+3. **Autorizar** com o token retornado
+4. **Testar** todos os endpoints interativamente
+
+
 ## ✅ Validações
 
 ### Form Requests
@@ -930,5 +1014,7 @@ Log::info('Inventory update completed for sale ID: ' . $sale->id);
 A API de Controle de Estoque e Vendas implementa uma arquitetura robusta e escalável, utilizando padrões de design modernos e boas práticas de desenvolvimento. A separação clara de responsabilidades, o uso de interfaces, DTOs e eventos garantem um código limpo, testável e manutenível.
 
 A implementação de autenticação via Laravel Sanctum, cache Redis e validações robustas garante segurança e performance. Os testes unitários e de integração com 50.5% de cobertura fornecem confiança na qualidade do código.
+
+A documentação Swagger/OpenAPI interativa facilita significativamente o desenvolvimento e integração, permitindo que desenvolvedores testem todos os endpoints de forma visual e intuitiva. A especificação OpenAPI padrão permite geração automática de clientes e mantém a documentação sempre sincronizada com o código.
 
 A API está preparada para crescimento futuro, com arquitetura que permite fácil extensão de funcionalidades e otimizações de performance conforme necessário. O uso do Laravel Sail facilita o desenvolvimento e deploy, garantindo consistência entre ambientes.
