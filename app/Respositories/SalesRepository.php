@@ -4,6 +4,7 @@ namespace App\Respositories;
 
 use App\Interfaces\SalesRepositoryInterface;
 use App\Models\Sale;
+use App\Models\SaleItem;
 
 /**
  * Repository responsável pelo acesso aos dados de vendas
@@ -56,5 +57,32 @@ class SalesRepository implements SalesRepositoryInterface
     public function find(int $id)
     {
         return $this->model->with('items.product')->findOrFail($id);
+    }
+
+    /**
+     * Atualiza uma venda existente
+     * 
+     * @param int $id ID da venda
+     * @param array $data Dados para atualização
+     * @return \App\Models\Sale Venda atualizada
+     * @throws \Illuminate\Database\Eloquent\ModelNotFoundException Quando venda não existe
+     */
+    public function update(int $id, array $data)
+    {
+        $sale = $this->model->findOrFail($id);
+        $sale->update($data);
+        return $sale->fresh();
+    }
+
+    /**
+     * Cria um novo item de venda
+     * 
+     * @param array $data Dados do item de venda
+     * @return \App\Models\SaleItem Item de venda criado
+     * @throws \Exception Quando ocorre erro na criação
+     */
+    public function createItem(array $data)
+    {
+        return SaleItem::create($data);
     }
 }

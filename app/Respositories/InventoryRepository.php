@@ -109,4 +109,15 @@ class InventoryRepository implements InventoryRepositoryInterface
     {
         return Inventory::find($id);
     }
+
+    /**
+     * Busca um registro de estoque por ID do produto
+     * 
+     * @param int $productId ID do produto
+     * @return \App\Models\Inventory|null Registro de estoque encontrado ou null
+     */
+    public function findByProductId(int $productId)
+    {
+        return Inventory::where('product_id', $productId)->first();
+    }
 }
