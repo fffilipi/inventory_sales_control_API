@@ -31,4 +31,23 @@ interface SalesRepositoryInterface
      * @throws \Illuminate\Database\Eloquent\ModelNotFoundException Quando venda não existe
      */
     public function find(int $id);
+
+    /**
+     * Atualiza uma venda existente
+     * 
+     * @param int $id ID da venda
+     * @param array $data Dados para atualização
+     * @return \App\Models\Sale Venda atualizada
+     * @throws \Illuminate\Database\Eloquent\ModelNotFoundException Quando venda não existe
+     */
+    public function update(int $id, array $data);
+
+    /**
+     * Cria um novo item de venda
+     * 
+     * @param array $data Dados do item de venda
+     * @return \App\Models\SaleItem Item de venda criado
+     * @throws \Exception Quando ocorre erro na criação
+     */
+    public function createItem(array $data);
 }

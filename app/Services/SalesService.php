@@ -3,10 +3,10 @@
 namespace App\Services;
 
 use App\Interfaces\SalesServiceInterface;
-use App\Respositories\SalesRepository;
+use App\Interfaces\SalesRepositoryInterface;
+use App\Interfaces\ProductRepositoryInterface;
+use App\Interfaces\InventoryRepositoryInterface;
 use App\Events\SaleCompleted;
-use App\Models\SaleItem;
-use App\Models\Product;
 
 /**
  * Serviço responsável pela lógica de negócio das vendas
@@ -24,18 +24,39 @@ class SalesService implements SalesServiceInterface
     /**
      * Repository de vendas injetado via dependência
      * 
-     * @var SalesRepository
+     * @var SalesRepositoryInterface
      */
-    protected $repository;
+    protected $salesRepository;
+
+    /**
+     * Repository de produtos injetado via dependência
+     * 
+     * @var ProductRepositoryInterface
+     */
+    protected $productRepository;
+
+    /**
+     * Repository de estoque injetado via dependência
+     * 
+     * @var InventoryRepositoryInterface
+     */
+    protected $inventoryRepository;
 
     /**
      * Construtor do serviço
      * 
-     * @param SalesRepository $repository Repository de vendas
+     * @param SalesRepositoryInterface $salesRepository Repository de vendas
+     * @param ProductRepositoryInterface $productRepository Repository de produtos
+     * @param InventoryRepositoryInterface $inventoryRepository Repository de estoque
      */
-    public function __construct(SalesRepository $repository)
-    {
-        $this->repository = $repository;
+    public function __construct(
+        SalesRepositoryInterface $salesRepository,
+        ProductRepositoryInterface $productRepository,
+        InventoryRepositoryInterface $inventoryRepository
+    ) {
+        $this->salesRepository = $salesRepository;
+        $this->productRepository = $productRepository;
+        $this->inventoryRepository = $inventoryRepository;
     }
 
     /**
@@ -56,7 +77,7 @@ class SalesService implements SalesServiceInterface
         $totalCost = 0;
         $totalAmount = 0;
 
-        $sale = $this->repository->create([
+        $sale = $this->salesRepository->create([
             'total_amount' => 0,
             'total_cost' => 0,
             'total_profit' => 0,
@@ -64,7 +85,7 @@ class SalesService implements SalesServiceInterface
         ]);
 
         foreach ($data['items'] as $item) {
-            $product = Product::findOrFail($item['product_id']);
+            $product = $this->productRepository->find($item['product_id']);
 
             $unitCost = $product->cost_price;
             $unitPrice = $product->sale_price;
@@ -72,7 +93,7 @@ class SalesService implements SalesServiceInterface
             $totalCost += $unitCost * $item['quantity'];
             $totalAmount += $unitPrice * $item['quantity'];
 
-            SaleItem::create([
+            $this->salesRepository->createItem([
                 'sale_id' => $sale->id,
                 'product_id' => $item['product_id'],
                 'quantity' => $item['quantity'],
@@ -81,12 +102,14 @@ class SalesService implements SalesServiceInterface
             ]);
         }
 
-        $sale->update([
+        $this->salesRepository->update($sale->id, [
             'total_amount' => $totalAmount,
             'total_cost' => $totalCost,
             'total_profit' => $totalAmount - $totalCost,
             'status' => 'completed',
         ]);
+
+        $sale->refresh();
 
         // Dispara evento para atualizar estoque
         SaleCompleted::dispatch($sale);
@@ -106,15 +129,15 @@ class SalesService implements SalesServiceInterface
     private function validateStockAvailability(array $items)
     {
         foreach ($items as $item) {
-            $inventory = \App\Models\Inventory::where('product_id', $item['product_id'])->first();
+            $inventory = $this->inventoryRepository->findByProductId($item['product_id']);
             
             if (!$inventory) {
-                $product = Product::findOrFail($item['product_id']);
+                $product = $this->productRepository->find($item['product_id']);
                 throw new \Exception("Produto '{$product->name}' não possui estoque disponível.");
             }
 
             if ($inventory->quantity < $item['quantity']) {
-                $product = Product::findOrFail($item['product_id']);
+                $product = $this->productRepository->find($item['product_id']);
                 throw new \Exception("Estoque insuficiente para o produto '{$product->name}'. Disponível: {$inventory->quantity}, Solicitado: {$item['quantity']}");
             }
         }
@@ -129,6 +152,6 @@ class SalesService implements SalesServiceInterface
      */
     public function getSaleDetails(int $id)
     {
-        return $this->repository->find($id);
+        return $this->salesRepository->find($id);
     }
 }

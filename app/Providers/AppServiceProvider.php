@@ -3,6 +3,12 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use App\Interfaces\SalesRepositoryInterface;
+use App\Respositories\SalesRepository;
+use App\Interfaces\ProductRepositoryInterface;
+use App\Respositories\ProductRepository;
+use App\Interfaces\InventoryRepositoryInterface;
+use App\Respositories\InventoryRepository;
 
 /**
  * Provider principal da aplicação
@@ -29,7 +35,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Bindings de Repositories
+        $this->app->bind(SalesRepositoryInterface::class, SalesRepository::class);
+        $this->app->bind(ProductRepositoryInterface::class, ProductRepository::class);
+        $this->app->bind(InventoryRepositoryInterface::class, InventoryRepository::class);
     }
 
     /**
