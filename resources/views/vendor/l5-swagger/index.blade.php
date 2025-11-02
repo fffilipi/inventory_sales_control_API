@@ -2,7 +2,33 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>{{ $documentationTitle }}</title>
+    <title>{{ $documentationTitle ?? config('l5-swagger.documentations.default.api.title', 'API Documentation') }}</title>
+    @php
+        $documentation = $documentation ?? 'default';
+        $documentationTitle = $documentationTitle ?? config('l5-swagger.documentations.'.$documentation.'.api.title', config('l5-swagger.documentations.default.api.title', 'API Documentation'));
+        $useAbsolutePath = $useAbsolutePath ?? true;
+        
+        // Se urlsToDocs não foi passado ou está vazio, gerar a URL baseada na configuração
+        if (!isset($urlsToDocs) || empty($urlsToDocs)) {
+            $docsFormat = config('l5-swagger.documentations.'.$documentation.'.paths.format_to_use_for_docs', 'json');
+            $docsFile = $docsFormat === 'yaml' 
+                ? config('l5-swagger.documentations.'.$documentation.'.paths.docs_yaml', 'api-docs.yaml')
+                : config('l5-swagger.documentations.'.$documentation.'.paths.docs_json', 'api-docs.json');
+            
+            try {
+                $docsRoute = route('l5-swagger.'.$documentation.'.docs', [], $useAbsolutePath);
+            } catch (\Exception $e) {
+                // Se a rota não existir, construir a URL manualmente baseada na configuração
+                $baseUrl = $useAbsolutePath ? url('/') : '';
+                $apiRoute = config('l5-swagger.documentations.'.$documentation.'.routes.api', 'api/documentation');
+                $docsRoute = rtrim($baseUrl, '/') . '/api/docs/' . $docsFile;
+            }
+            
+            $urlsToDocs = [
+                $documentationTitle => $docsRoute
+            ];
+        }
+    @endphp
     <link rel="stylesheet" type="text/css" href="{{ l5_swagger_asset($documentation, 'swagger-ui.css') }}">
     <link rel="icon" type="image/png" href="{{ l5_swagger_asset($documentation, 'favicon-32x32.png') }}" sizes="32x32"/>
     <link rel="icon" type="image/png" href="{{ l5_swagger_asset($documentation, 'favicon-16x16.png') }}" sizes="16x16"/>
@@ -125,15 +151,27 @@
     window.onload = function() {
         const urls = [];
 
-        @foreach($urlsToDocs as $title => $url)
-            urls.push({name: "{{ $title }}", url: "{{ $url }}"});
-        @endforeach
+        @if(!empty($urlsToDocs))
+            @foreach($urlsToDocs as $title => $url)
+                urls.push({name: "{{ $title }}", url: "{{ $url }}"});
+            @endforeach
+        @else
+            // Fallback: usar URL direta da documentação
+            urls.push({
+                name: "{{ $documentationTitle }}",
+                url: "{{ url('/api/docs/api-docs.json') }}"
+            });
+        @endif
 
         // Build a system
-        const ui = SwaggerUIBundle({
+        const uiConfig = {
             dom_id: '#swagger-ui',
+            @if(!empty($urlsToDocs) && count($urlsToDocs) > 1)
             urls: urls,
             "urls.primaryName": "{{ $documentationTitle }}",
+            @else
+            url: urls.length > 0 ? urls[0].url : "{{ url('/api/docs/api-docs.json') }}",
+            @endif
             operationsSorter: {!! isset($operationsSorter) ? '"' . $operationsSorter . '"' : 'null' !!},
             configUrl: {!! isset($configUrl) ? '"' . $configUrl . '"' : 'null' !!},
             validatorUrl: {!! isset($validatorUrl) ? '"' . $validatorUrl . '"' : 'null' !!},
@@ -157,9 +195,10 @@
             docExpansion : "{!! config('l5-swagger.defaults.ui.display.doc_expansion', 'none') !!}",
             deepLinking: true,
             filter: {!! config('l5-swagger.defaults.ui.display.filter') ? 'true' : 'false' !!},
-            persistAuthorization: "{!! config('l5-swagger.defaults.ui.authorization.persist_authorization') ? 'true' : 'false' !!}",
+            persistAuthorization: "{!! config('l5-swagger.defaults.ui.authorization.persist_authorization') ? 'true' : 'false' !!}"
+        };
 
-        })
+        const ui = SwaggerUIBundle(uiConfig)
 
         window.ui = ui
 
