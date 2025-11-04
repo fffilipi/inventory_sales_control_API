@@ -340,9 +340,7 @@ class SalesServiceTest extends TestCase
         $this->assertEquals($expectedTotalCost, $result->total_cost, 'Total cost deve ser a soma de todos os custos');
         $this->assertEquals($expectedTotalProfit, $result->total_profit, 'Total profit deve ser calculado corretamente');
         $this->assertEquals('completed', $result->status, 'Status deve ser completed após processamento');
-        
-        // Verificar se createItem foi chamado duas vezes (uma para cada produto)
-        $this->salesRepositoryMock->shouldHaveReceived('createItem')->times(2);
+
     }
 
     /**

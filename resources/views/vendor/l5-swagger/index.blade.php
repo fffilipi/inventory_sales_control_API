@@ -28,6 +28,32 @@
                 $documentationTitle => $docsRoute
             ];
         }
+
+        // Preparar dados para JavaScript
+        $urlsArray = [];
+        if (!empty($urlsToDocs)) {
+            foreach ($urlsToDocs as $title => $url) {
+                $urlsArray[] = ['name' => $title, 'url' => $url];
+            }
+        } else {
+            $urlsArray[] = ['name' => $documentationTitle, 'url' => url('/api/docs/api-docs.json')];
+        }
+        $urlsJson = json_encode($urlsArray);
+        
+        $useMultipleUrls = !empty($urlsToDocs) && count($urlsToDocs) > 1;
+        $primaryUrl = !empty($urlsToDocs) ? reset($urlsToDocs) : url('/api/docs/api-docs.json');
+        $fallbackUrl = url('/api/docs/api-docs.json');
+        
+        // Preparar configuração de URL para o objeto JavaScript
+        $urlConfig = $useMultipleUrls 
+            ? 'urls: ' . $urlsJson . ', "urls.primaryName": ' . json_encode($documentationTitle)
+            : 'url: ' . json_encode($primaryUrl);
+        
+        // Verificar se OAuth2 está habilitado
+        $hasOAuth2 = in_array('oauth2', array_column(config('l5-swagger.defaults.securityDefinitions.securitySchemes', []), 'type') ?? []);
+        $oauth2Config = $hasOAuth2 
+            ? 'ui.initOAuth({usePkceWithAuthorizationCodeGrant: ' . (config('l5-swagger.defaults.ui.authorization.oauth2.use_pkce_with_authorization_code_grant') ? 'true' : 'false') . '});'
+            : '';
     @endphp
     <link rel="stylesheet" type="text/css" href="{{ l5_swagger_asset($documentation, 'swagger-ui.css') }}">
     <link rel="icon" type="image/png" href="{{ l5_swagger_asset($documentation, 'favicon-32x32.png') }}" sizes="32x32"/>
@@ -149,36 +175,17 @@
 <script src="{{ l5_swagger_asset($documentation, 'swagger-ui-standalone-preset.js') }}"></script>
 <script>
     window.onload = function() {
-        const urls = [];
-
-        @if(!empty($urlsToDocs))
-            @foreach($urlsToDocs as $title => $url)
-                urls.push({name: "{{ $title }}", url: "{{ $url }}"});
-            @endforeach
-        @else
-            // Fallback: usar URL direta da documentação
-            urls.push({
-                name: "{{ $documentationTitle }}",
-                url: "{{ url('/api/docs/api-docs.json') }}"
-            });
-        @endif
-
         // Build a system
         const uiConfig = {
             dom_id: '#swagger-ui',
-            @if(!empty($urlsToDocs) && count($urlsToDocs) > 1)
-            urls: urls,
-            "urls.primaryName": "{{ $documentationTitle }}",
-            @else
-            url: urls.length > 0 ? urls[0].url : "{{ url('/api/docs/api-docs.json') }}",
-            @endif
-            operationsSorter: {!! isset($operationsSorter) ? '"' . $operationsSorter . '"' : 'null' !!},
-            configUrl: {!! isset($configUrl) ? '"' . $configUrl . '"' : 'null' !!},
-            validatorUrl: {!! isset($validatorUrl) ? '"' . $validatorUrl . '"' : 'null' !!},
-            oauth2RedirectUrl: "{{ route('l5-swagger.'.$documentation.'.oauth2_callback', [], $useAbsolutePath) }}",
+            {!! $urlConfig !!},
+            operationsSorter: {!! isset($operationsSorter) ? json_encode($operationsSorter) : 'null' !!},
+            configUrl: {!! isset($configUrl) ? json_encode($configUrl) : 'null' !!},
+            validatorUrl: {!! isset($validatorUrl) ? json_encode($validatorUrl) : 'null' !!},
+            oauth2RedirectUrl: {!! json_encode(route('l5-swagger.'.$documentation.'.oauth2_callback', [], $useAbsolutePath)) !!},
 
             requestInterceptor: function(request) {
-                request.headers['X-CSRF-TOKEN'] = '{{ csrf_token() }}';
+                request.headers['X-CSRF-TOKEN'] = {!! json_encode(csrf_token()) !!};
                 return request;
             },
 
@@ -192,21 +199,17 @@
             ],
 
             layout: "StandaloneLayout",
-            docExpansion : "{!! config('l5-swagger.defaults.ui.display.doc_expansion', 'none') !!}",
+            docExpansion : {!! json_encode(config('l5-swagger.defaults.ui.display.doc_expansion', 'none')) !!},
             deepLinking: true,
             filter: {!! config('l5-swagger.defaults.ui.display.filter') ? 'true' : 'false' !!},
-            persistAuthorization: "{!! config('l5-swagger.defaults.ui.authorization.persist_authorization') ? 'true' : 'false' !!}"
+            persistAuthorization: {!! config('l5-swagger.defaults.ui.authorization.persist_authorization') ? 'true' : 'false' !!}
         };
 
-        const ui = SwaggerUIBundle(uiConfig)
+        const ui = SwaggerUIBundle(uiConfig);
 
-        window.ui = ui
+        window.ui = ui;
 
-        @if(in_array('oauth2', array_column(config('l5-swagger.defaults.securityDefinitions.securitySchemes'), 'type')))
-        ui.initOAuth({
-            usePkceWithAuthorizationCodeGrant: "{!! (bool)config('l5-swagger.defaults.ui.authorization.oauth2.use_pkce_with_authorization_code_grant') !!}"
-        })
-        @endif
+        {!! $oauth2Config !!}
     }
 </script>
 </body>
